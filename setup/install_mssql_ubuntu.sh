@@ -49,6 +49,9 @@ apt-get install -y curl gnupg ca-certificates
 # 1. Ключ і репозиторії Microsoft (сервер + інструменти командного рядка)
 curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
     | tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
+# Списки репозиторіїв для 24.04 посилаються на signed-by=/usr/share/keyrings/microsoft-prod.gpg
+curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+    | gpg --dearmor --yes -o /usr/share/keyrings/microsoft-prod.gpg
 curl -fsSL "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VER}/mssql-server-${MSSQL_VER}.list" \
     | tee /etc/apt/sources.list.d/mssql-server-${MSSQL_VER}.list > /dev/null
 curl -fsSL "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VER}/prod.list" \
