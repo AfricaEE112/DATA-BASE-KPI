@@ -43,16 +43,18 @@ fi
 
 echo ">>> Ubuntu $UBUNTU_VER -> встановлюємо SQL Server $MSSQL_VER"
 
-apt-get update
-apt-get install -y curl gnupg ca-certificates
-
-# 1. Ключ і репозиторії Microsoft (сервер + інструменти командного рядка)
-#    Прибираємо залишки попередніх спроб, щоб не було конфліктів Signed-By
+# 0. Прибираємо залишки попередніх спроб ДО першого apt-get update,
+#    інакше зламані списки репозиторіїв Microsoft зупиняють скрипт
+dpkg --purge packages-microsoft-prod > /dev/null 2>&1 || true
 rm -f /etc/apt/sources.list.d/mssql-release.list \
       /etc/apt/sources.list.d/mssql-server-*.list \
       /etc/apt/trusted.gpg.d/microsoft.asc \
       /usr/share/keyrings/microsoft-prod.gpg
 
+apt-get update
+apt-get install -y curl gnupg ca-certificates
+
+# 1. Ключ і репозиторії Microsoft (сервер + інструменти командного рядка)
 #    Офіційний пакет Microsoft: ставить ключ (/usr/share/keyrings/microsoft-prod.gpg)
 #    і репозиторій prod (там лежать mssql-tools18)
 curl -fsSL -o /tmp/packages-microsoft-prod.deb \
