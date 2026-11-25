@@ -47,15 +47,26 @@ apt-get update
 apt-get install -y curl gnupg ca-certificates
 
 # 1. Ключ і репозиторії Microsoft (сервер + інструменти командного рядка)
-curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
-    | tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
-# Списки репозиторіїв для 24.04 посилаються на signed-by=/usr/share/keyrings/microsoft-prod.gpg
-curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
-    | gpg --dearmor --yes -o /usr/share/keyrings/microsoft-prod.gpg
+#    Прибираємо залишки попередніх спроб, щоб не було конфліктів Signed-By
+rm -f /etc/apt/sources.list.d/mssql-release.list \
+      /etc/apt/sources.list.d/mssql-server-*.list \
+      /etc/apt/trusted.gpg.d/microsoft.asc \
+      /usr/share/keyrings/microsoft-prod.gpg
+
+#    Офіційний пакет Microsoft: ставить ключ (/usr/share/keyrings/microsoft-prod.gpg)
+#    і репозиторій prod (там лежать mssql-tools18)
+curl -fsSL -o /tmp/packages-microsoft-prod.deb \
+    "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VER}/packages-microsoft-prod.deb"
+dpkg -i /tmp/packages-microsoft-prod.deb
+rm -f /tmp/packages-microsoft-prod.deb
+
+#    Репозиторій самого SQL Server
 curl -fsSL "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VER}/mssql-server-${MSSQL_VER}.list" \
     | tee /etc/apt/sources.list.d/mssql-server-${MSSQL_VER}.list > /dev/null
-curl -fsSL "https://packages.microsoft.com/config/ubuntu/${UBUNTU_VER}/prod.list" \
-    | tee /etc/apt/sources.list.d/mssql-release.list > /dev/null
+
+echo ">>> Підключені репозиторії Microsoft:"
+grep -h microsoft /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true
+
 apt-get update
 
 # 2. Сам сервер
